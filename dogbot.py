@@ -1,12 +1,21 @@
 import discord
-from discord.ext import commands
+from discord import app_commands
 import random
 import datetime
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='!', intents=intents)
+class PetBot(discord.Client):
+    def __init__(self):
+        super().__init__(intents=intents)
+        self.tree = app_commands.CommandTree(self)
+        
+    async def setup_hook(self):
+        print(f'{self.user} is connecting to Discord!')
+        await self.tree.sync()
+
+bot = PetBot()
 
 morning_messages = [
     "PETNAME is hiding behind his plant",
@@ -19,9 +28,9 @@ morning_messages = [
     "PETNAME is just happy to see you",
     "PETNAME is finding a way onto the table",
     "PETNAME is distracted by other people",
-    "PETNAME and Gia are unionizing to have the walk end at the alley",
+    "PETNAME and OTHERPET are unionizing to have the walk end at the alley",
     "PETNAME is hiding behind his plant",
-    "PETNAME is distracted by Gia"
+    "PETNAME is distracted by OTHERPET"
 ]
 
 afternoon_messages = [
@@ -49,13 +58,13 @@ afternoon_messages = [
 evening_messages = [
     "PETNAME is sitting in the butler pantry",
     "PETNAME is peeing in the basement",
-    "PETNAME is following Gia while she barks",
+    "PETNAME is following OTHERPET while she barks",
     "PETNAME is playing with his puzzle",
     "PETNAME is distracted by an itch",
     "PETNAME is scratching his ear",
     "PETNAME is protecting his meal (a paper towel)",
     "PETNAME thinks you have a treat so he is doing every trick he knows to try to get it",
-    "PETNAME is trying to figure out why Gia is so upset",
+    "PETNAME is trying to figure out why OTHERPET is so upset",
     "PETNAME is distracted by food",
     "PETNAME is distracted by the food in your hand",
     "PETNAME is trying to repay you by licking your face"
@@ -73,6 +82,12 @@ night_messages = [
     "PETNAME is distracted by a noise"
 ]
 
+error_messages = [
+    "PETNAME wrinkles their nose",
+    "PETNAME snaps at you",
+    "PETNAME sits somewhere else"
+]
+
 pet_messages = [
     "PETNAME looks at the toy you show him and walks away to lick his nuts",
     "PETNAME leans into your head scratches",
@@ -82,17 +97,13 @@ pet_messages = [
     "PETNAME licks your face and licks his nuts immediately after",
     "PETNAME starts talking after you find his sweet spot"
 ]
-error_messages = [
-    "PETNAME wrinkles their nose",
-    "PETNAME snaps at you",
-    "PETNAME sits somewhere else"
-]
+
 @bot.event
 async def on_ready():
     print(f'{bot.user} has connected to Discord!')
 
-@bot.command(name='PETNAME')
-async def PETNAME(ctx):
+@bot.tree.command(name="PETNAME", description="Check on PETNAME")
+async def pet_slash(interaction: discord.Interaction):
     current_time = datetime.datetime.now().time()
     
     if current_time < datetime.time(12, 0):
@@ -104,27 +115,33 @@ async def PETNAME(ctx):
     else:
         message = random.choice(night_messages)
     
-    print(f'[{ctx.author}] - PETNAME command: {message}')
-    await ctx.send(message)
+    print(f'[{interaction.user}] - PETNAME command: {message}')
+    await interaction.response.send_message(message)
 
-@bot.command(name='PETNAME_pet')
-async def PETNAME_pet(ctx):
+@bot.tree.command(name="PETNAME_pet", description="Pet PETNAME")
+async def pet_pet_slash(interaction: discord.Interaction):
     message = random.choice(pet_messages)
-    print(f'[{ctx.author}] - PETNAME pet command: {message}')
-    await ctx.send(message)
+    print(f'[{interaction.user}] - PETNAME pet command: {message}')
+    await interaction.response.send_message(message)
 
-@bot.command(name='PETNAME_getattention')
-async def PETNAME_getattention(ctx, user1: discord.User, user2: discord.User):
+@bot.tree.command(name="PETNAME_getattention", description="Test who PETNAME loves more")
+@app_commands.describe(
+    user1="First user vying for PETNAME's attention",
+    user2="Second user vying for PETNAME's attention"
+)
+async def pet_getattention_slash(interaction: discord.Interaction, user1: discord.User, user2: discord.User):
     chosen_user = random.choice([user1, user2])
     message = f"PETNAME sits next to {chosen_user.mention}!"
-    print(f'[{ctx.author}] - PETNAME getattention command: {message}')
-    await ctx.send(message)
+    print(f'[{interaction.user}] - PETNAME getattention command: {message}')
+    await interaction.response.send_message(message)
 
-@bot.command(name='MISSSPELL1')
-async def MISSSPELL1(ctx):
+@bot.tree.command(name="MISSPELL1", description="Misspell PETNAME and see what happens")
+async def misspell1_slash(interaction: discord.Interaction):
     message = random.choice(error_messages)
-    print(f'[{ctx.author}] - MISSSPELL1 command: {message}')
-    await ctx.send(message)
+    print(f'[{interaction.user}] - MISSPELL1 command: {message}')
+    await interaction.response.send_message(message)
+
+
 
 # Replace 'DISCORDAPIKEY' with your actual bot token
 bot.run('DISCORDAPIKEY')
