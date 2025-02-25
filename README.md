@@ -12,12 +12,12 @@ This Discord bot simulates pet behavior for a cat and a dog. It responds to comm
 ## Commands
 
 For both cat and dog:
-- `!PETNAME`: Get a random message about what the pet is doing
-- `!PETNAME_pet`: Pet the animal and get a response
-- `!PETNAME_getattention`: The pet gives attention to a randomly chosen user from two mentioned users
-- `!MISSSPELL1`: Triggers a negative response from the pet (as if the name was misspelled)
+- `/PETNAME`: Get a random message about what the pet is doing
+- `/PETNAME_pet`: Pet the animal and get a response
+- `/PETNAME_getattention`: The pet gives attention to a randomly chosen user from two mentioned users
+- `/MISSPELL1`: Triggers a negative response from the pet (as if the name was misspelled)
 Replace `PETNAME` with the actual name of the pet in your implementation. 
-Replace `MISSSPELL1` with a common missspelling of your animals name. If you misspell the pet's name when using a command, it will elicit a negative response from the pet.
+Replace `MISSPELL1` with a common misspelling of your animals name. If you misspell the pet's name when using a command, it will elicit a negative response from the pet.
 
 ## Setup
 
@@ -74,7 +74,7 @@ The bot uses the current time to determine which set of messages to use:
 
 ## Misspelled Name Responses
 
-The `error_messages` list contains responses that the pet will give if its name is misspelled. This adds a fun, realistic touch to the bot's behavior. The `!MISSSPELL1` and `!MISSSPELL2` commands allow you to trigger these responses directly.
+The `error_messages` list contains responses that the pet will give if its name is misspelled. The `/MISSSPELL1` and `/MISSSPELL2` commands allow you to trigger these responses directly.
 
 ## Note on Privacy
 
