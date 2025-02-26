@@ -1,9 +1,8 @@
-import discord
-from discord import app_commands
 import random
 import datetime
 import os
-from dotenv import load_dotenv
+import discord
+from discord import app_commands
 
 intents = discord.Intents.default()
 intents.message_content = True
