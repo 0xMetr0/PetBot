@@ -1,7 +1,8 @@
-import discord
-from discord import app_commands
 import random
 import datetime
+import os
+import discord
+from discord import app_commands
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -12,6 +13,7 @@ class PetBot(discord.Client):
         self.tree = app_commands.CommandTree(self)
         
     async def setup_hook(self):
+        """A hook that is called when the bot is starting up"""
         print(f'{self.user} is connecting to Discord!')
         await self.tree.sync()
 
@@ -100,48 +102,85 @@ pet_messages = [
 
 @bot.event
 async def on_ready():
+    """Event handler for when the bot is ready and connected to Discord"""
     print(f'{bot.user} has connected to Discord!')
-
-@bot.tree.command(name="PETNAME", description="Check on PETNAME")
-async def pet_slash(interaction: discord.Interaction):
+    print(f"Bot is in {len(bot.guilds)} guild(s)")
+    
+def get_time_based_message():
     current_time = datetime.datetime.now().time()
     
     if current_time < datetime.time(12, 0):
-        message = random.choice(morning_messages)
+        return random.choice(morning_messages)
     elif current_time < datetime.time(17, 0):
-        message = random.choice(afternoon_messages)
+        return random.choice(afternoon_messages)
     elif current_time < datetime.time(21, 0):
-        message = random.choice(evening_messages)
+        return random.choice(evening_messages)
     else:
-        message = random.choice(night_messages)
-    
+        return random.choice(night_messages)
+
+@bot.tree.command(name="PETNAME", description="Check on PETNAME")
+async def pet_slash(interaction: discord.Interaction):
+    """Slash command to check on the pet"""
+    message = get_time_based_message()
     print(f'[{interaction.user}] - PETNAME command: {message}')
     await interaction.response.send_message(message)
 
 @bot.tree.command(name="PETNAME_pet", description="Pet PETNAME")
 async def pet_pet_slash(interaction: discord.Interaction):
+    """Slash command to pet the pet"""
     message = random.choice(pet_messages)
     print(f'[{interaction.user}] - PETNAME pet command: {message}')
     await interaction.response.send_message(message)
 
 @bot.tree.command(name="PETNAME_getattention", description="Test who PETNAME loves more")
 @app_commands.describe(
-    user1="First user vying for PETNAME's attention",
-    user2="Second user vying for PETNAME's attention"
+    user1="First user who might get PETNAME's attention",
+    user2="Second user who might get PETNAME's attention"
 )
 async def pet_getattention_slash(interaction: discord.Interaction, user1: discord.User, user2: discord.User):
+    """Slash command to see which user gets the pet's attention"""
     chosen_user = random.choice([user1, user2])
-    message = f"PETNAME sits next to {chosen_user.mention}!"
+    message = f"PETNAME is giving attention to {chosen_user.mention}!"
     print(f'[{interaction.user}] - PETNAME getattention command: {message}')
     await interaction.response.send_message(message)
 
 @bot.tree.command(name="MISSPELL1", description="Misspell PETNAME and see what happens")
 async def misspell1_slash(interaction: discord.Interaction):
+    """Slash command for misspelling the pet's name"""
     message = random.choice(error_messages)
     print(f'[{interaction.user}] - MISSPELL1 command: {message}')
     await interaction.response.send_message(message)
 
+@bot.tree.command(name="MISSPELL2", description="Misspell PETNAME and see what happens")
+async def misspell2_slash(interaction: discord.Interaction):
+    """Slash command for misspelling the pet's name again"""
+    message = random.choice(error_messages)
+    print(f'[{interaction.user}] - MISSPELL2 command: {message}')
+    await interaction.response.send_message(message)
 
+@bot.tree.error
+async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+    """Global error handler for all application commands"""
+    if isinstance(error, app_commands.CommandOnCooldown):
+        await interaction.response.send_message(
+            f"This command is on cooldown. Try again in {error.retry_after:.2f} seconds.", 
+            ephemeral=True
+        )
+    elif isinstance(error, app_commands.MissingPermissions):
+        await interaction.response.send_message(
+            "You don't have permission to use this command.", 
+            ephemeral=True
+        )
+    else:
+        print(f"Error in {interaction.command.name}: {error}")
+        await interaction.response.send_message(
+            f"Something went wrong with that command. Please try again later.",
+            ephemeral=True
+        )
 
-# Replace 'DISCORDAPIKEY' with your actual bot token
-bot.run('DISCORDAPIKEY')
+if __name__ == "__main__":
+    TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+    if not TOKEN:
+        raise ValueError("No token found. Please set the DISCORD_TOKEN environment variable.")
+    
+    bot.run(TOKEN)
